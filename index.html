@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jasser - Portfolio Personale</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <meta name="description" content="Portfolio personale di Jasser - Uno spazio creativo e interattivo in 3D">
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <nav>
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#chi-sono">Chi sono</a></li>
+            <li><a href="#progetti">Progetti</a></li>
+            <li><a href="#esperienze">Esperienze</a></li>
+            <li><a href="#competenze">Competenze</a></li>
+            <li><a href="#contatti">Contatti</a></li>
+        </ul>
+    </nav>
+    
+    <div id="content">
+        <section id="home" class="section">
+            <div class="section-content">
+                <h1 class="section-title">Jasser</h1>
+                <p>Benvenuto nel mio spazio personale digitale. Un luogo dove mostrare chi sono, cosa ho fatto e cosa voglio diventare.</p>
+                <div id="message">Muovi il mouse per esplorare lo spazio 3D</div>
+            </div>
+        </section>
+        
+        <section id="chi-sono" class="section">
+            <div class="section-content">
+                <h2 class="section-title">Chi sono</h2>
+                <!-- Il contenuto sarà caricato dinamicamente da chi-sono.md -->
+                <div class="loading">Caricamento in corso...</div>
+            </div>
+        </section>
+        
+        <section id="progetti" class="section">
+            <div class="section-content">
+                <h2 class="section-title">Progetti personali</h2>
+                <!-- Il contenuto sarà caricato dinamicamente da progetti.md -->
+                <div class="loading">Caricamento in corso...</div>
+            </div>
+        </section>
+        
+        <section id="esperienze" class="section">
+            <div class="section-content">
+                <h2 class="section-title">Esperienze e portfolio</h2>
+                <!-- Il contenuto sarà caricato dinamicamente da esperienze.md -->
+                <div class="loading">Caricamento in corso...</div>
+            </div>
+        </section>
+        
+        <section id="competenze" class="section">
+            <div class="section-content">
+                <h2 class="section-title">Obiettivi e competenze</h2>
+                <!-- Il contenuto sarà caricato dinamicamente da competenze.md -->
+                <div class="loading">Caricamento in corso...</div>
+            </div>
+        </section>
+        
+        <section id="contatti" class="section">
+            <div class="section-content">
+                <h2 class="section-title">Contatti e testimonianze</h2>
+                <!-- Il contenuto sarà caricato dinamicamente da contatti.md -->
+                <div class="loading">Caricamento in corso...</div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Admin Panel per la modifica dei contenuti (visibile solo in modalità admin) -->
+    <div id="admin-panel" style="display: none;">
+        <div class="admin-controls">
+            <h3>Pannello di Amministrazione</h3>
+            <select id="section-selector">
+                <option value="chi-sono">Chi sono</option>
+                <option value="progetti">Progetti</option>
+                <option value="esperienze">Esperienze</option>
+                <option value="competenze">Competenze</option>
+                <option value="contatti">Contatti</option>
+            </select>
+            <button id="edit-button">Modifica</button>
+            <button id="save-button" style="display: none;">Salva</button>
+            <button id="cancel-button" style="display: none;">Annulla</button>
+        </div>
+        <div id="editor-container" style="display: none;">
+            <textarea id="content-editor"></textarea>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script type="module" src="js/models.js"></script>
+    <script type="module" src="js/main.js"></script>
+    <script src="js/content-loader.js"></script>
+    
+    <!-- Script per il pannello di amministrazione -->
+    <script>
+        // Funzione per attivare la modalità admin (da implementare con autenticazione in produzione)
+        function enableAdminMode() {
+            const adminPanel = document.getElementById('admin-panel');
+            if (adminPanel) {
+                adminPanel.style.display = 'block';
+                setupAdminPanel();
+            }
+        }
+        
+        // Configurazione del pannello di amministrazione
+        function setupAdminPanel() {
+            const sectionSelector = document.getElementById('section-selector');
+            const editButton = document.getElementById('edit-button');
+            const saveButton = document.getElementById('save-button');
+            const cancelButton = document.getElementById('cancel-button');
+            const editorContainer = document.getElementById('editor-container');
+            const contentEditor = document.getElementById('content-editor');
+            
+            let currentSection = '';
+            let originalContent = '';
+            
+            // Gestione del pulsante di modifica
+            editButton.addEventListener('click', async () => {
+                currentSection = sectionSelector.value;
+                
+                try {
+                    // Carica il contenuto del file Markdown
+                    const response = await fetch(`components/${currentSection}.md`);
+                    if (!response.ok) {
+                        throw new Error(`Errore nel caricamento: ${response.status}`);
+                    }
+                    
+                    originalContent = await response.text();
+                    contentEditor.value = originalContent;
+                    
+                    // Mostra l'editor
+                    editorContainer.style.display = 'block';
+                    saveButton.style.display = 'inline-block';
+                    cancelButton.style.display = 'inline-block';
+                    editButton.style.display = 'none';
+                } catch (error) {
+                    console.error('Errore durante il caricamento del contenuto:', error);
+                    alert('Errore durante il caricamento del contenuto. Riprova più tardi.');
+                }
+            });
+            
+            // Gestione del pulsante di salvataggio
+            saveButton.addEventListener('click', () => {
+                const newContent = contentEditor.value;
+                
+                // In un ambiente di produzione, qui si implementerebbe il salvataggio del file sul server
+                // Per ora, aggiorniamo solo l'interfaccia
+                if (window.contentLoader) {
+                    window.contentLoader.updateSection(currentSection, newContent);
+                    
+                    // Nascondi l'editor
+                    editorContainer.style.display = 'none';
+                    saveButton.style.display = 'none';
+                    cancelButton.style.display = 'none';
+                    editButton.style.display = 'inline-block';
+                    
+                    alert('Contenuto aggiornato con successo!');
+                }
+            });
+            
+            // Gestione del pulsante di annullamento
+            cancelButton.addEventListener('click', () => {
+                // Ripristina il contenuto originale
+                contentEditor.value = originalContent;
+                
+                // Nascondi l'editor
+                editorContainer.style.display = 'none';
+                saveButton.style.display = 'none';
+                cancelButton.style.display = 'none';
+                editButton.style.display = 'inline-block';
+            });
+        }
+        
+        // Attiva la modalità admin con la combinazione di tasti Ctrl+Shift+A
+        document.addEventListener('keydown', (event) => {
+            if (event.ctrlKey && event.shiftKey && event.key === 'A') {
+                enableAdminMode();
+            }
+        });
+    </script>
+</body>
+</html>
